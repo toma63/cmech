@@ -1,6 +1,6 @@
 package cmech
 
-import (math
+import ("math"
 )
 
 // celestial body
@@ -22,7 +22,7 @@ func (body *Body) Dist(other *Body) float64 {
 	dx := body.X - other.X
 	dy := body.Y - other.Y
 	dz := body.Z - other.Z
-	return math.sqrt((dx * dx) + (dy * dy) + (dz * dz))
+	return math.Sqrt((dx * dx) + (dy * dy) + (dz * dz))
 }
 
 // update state of body and other based on pairwise interaction
@@ -34,7 +34,7 @@ func (body *Body) Update(other *Body, timestep float64) {
 	dy := body.Y - other.Y
 	dz := body.Z - other.Z
 
-	r := math.sqrt((dx * dx) + (dy * dy) + (dz * dz))
+	r := math.Sqrt((dx * dx) + (dy * dy) + (dz * dz))
 	
 	ab := -(G * other.Mass) / (r * r) 
 	ao := (G * body.Mass) / (r * r) 
@@ -61,7 +61,7 @@ func (body *Body) Update(other *Body, timestep float64) {
 	body.Vy = body.Vy + (ayb / timestep)
 	body.Vz = body.Vz + (azb / timestep)
 	
-	other.Vx = other.Vx + (axb / timestep)
-	other.Vy = other.Vy + (ayb / timestep)
-	other.Vz = other.Vz + (azb / timestep)
+	other.Vx = other.Vx + (axo / timestep)
+	other.Vy = other.Vy + (ayo / timestep)
+	other.Vz = other.Vz + (azo / timestep)
 }
