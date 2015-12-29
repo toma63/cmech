@@ -16,7 +16,7 @@ type Body struct {
 }
 
 // gravitational constant
-const G float64 = 6.674e-11 // N m**2 / kg**2
+const G float64 = 6.674e-20 // km**3 / kg-s**2
 
 // compute the Euclidian distance between two bodies
 func (body *Body) Dist(other *Body) float64 {
