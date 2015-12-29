@@ -2,7 +2,7 @@
 A simple celestial mechanics package in golang
 
 ## Body
-A struct which model a celestial body in the solar system.
+A struct which models a celestial body in the solar system.
 Mass in kg, state vector in cartesian coordinates (km-s).
 
 ## getsv
