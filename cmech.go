@@ -4,6 +4,7 @@ import ("math"
 )
 
 // celestial body
+// km, sec, kg
 type Body struct {
 	X float64
 	Y float64
