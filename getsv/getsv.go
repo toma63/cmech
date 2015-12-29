@@ -1,27 +1,32 @@
-package main
+package getsv
 
-import ("fmt"
-	"github.com/ThomasRooney/gexpect"
-	"flag"
+import ("github.com/ThomasRooney/gexpect"
+	"github.com/toma63/cmech"
 	"time"
+	"strconv"
+	"math"
 )
 
-// get state vector for a named celestial body
-func getsv(oname string) (string, string, []string, []string) {
+// map names to JPL Horizons object ids
+var Name2id = map[string]string {
+	"sun": "10",
+	"earth": "399",
+	"moon": "301",
+	"mars": "499",
+	"mercury": "199",
+	"venus": "299",
+	"jupiter": "599",
+	"saturn": "699",
+	"uranus": "799",
+	"neptune": "899",
+	"pluto": "999"}
 
-	// map names to JPL Horizons object ids
-	Name2id := map[string]string {
-		"sun": "10",
-		"earth": "399",
-		"moon": "301",
-		"mars": "499",
-		"mercury": "199",
-		"venus": "299",
-		"jupiter": "599",
-		"saturn": "699",
-		"uranus": "799",
-		"neptune": "899",
-		"pluto": "999"}
+// get state vector for a named celestial body
+// return a cmech.Body
+// convert to units of km, sec, kg
+// takes horizons_time time.Time
+// allowing multiple objects to use the same starting time
+func GetSV(oname string, horizons_time time.Time) cmech.Body {
 
 	// connect to the JPL Horizons telnet interface
 	child, err := gexpect.Spawn("telnet horizons.jpl.nasa.gov 6775")
@@ -35,14 +40,15 @@ func getsv(oname string) (string, string, []string, []string) {
 	child.SendLine(id)
 
 	// get mass
-	mass_sl, _ := child.ExpectRegexFind(`Mass\s*\w*,?\s*\(?(10\^\d+)\s*kg\s*\)?\s*(=|~)\s*(\d+\.\d+)`)
-	mass_factor := mass_sl[1]
-	mass := mass_sl[3]
-
-	// current time (first 16 chars)
-	tn := time.Now()
-	tnf := tn.Format("2006-Jan-02 15:04")
-	tlf := tn.Add(24 * time.Hour).Format("2006-Jan-02 15:04") // one day later
+	mass_sl, _ := child.ExpectRegexFind(`Mass\s*\w*,?\s*\(?10\^(\d+)\s*kg\s*\)?\s*(=|~)\s*(\d+\.\d+)`)
+	mass_exp, _ := strconv.ParseFloat(mass_sl[1], 64)
+	mass_factor := math.Pow(10.0, mass_exp)
+	scaled_mass, _ := strconv.ParseFloat(mass_sl[3], 64)
+	mass := scaled_mass * mass_factor
+	
+	// covert time to horizons format
+	tnf := horizons_time.Format("2006-Jan-02 15:04")
+	tlf := horizons_time.Add(24 * time.Hour).Format("2006-Jan-02 15:04") // one day later
 
 	// get state vector
 	child.Expect("<cr>:")
@@ -74,19 +80,24 @@ func getsv(oname string) (string, string, []string, []string) {
 	child.Expect("Select output table type  [ 1-6, ?  ] :")
 	child.SendLine("2")
 	stv_pos_sl, _ := child.ExpectRegexFind(`\s+(-?\d\.\d+E[+-]\d+)\s+(-?\d\.\d+E[+-]\d+)\s+(-?\d\.\d+E[+-]\d+)`)
-	stv_pos := stv_pos_sl[1:4]
 	stv_vel_sl, _ := child.ExpectRegexFind(`\s+(-?\d\.\d+E[+-]\d+)\s+(-?\d\.\d+E[+-]\d+)\s+(-?\d\.\d+E[+-]\d+)`)
-	stv_vel := stv_vel_sl[1:4]
 
-	return mass_factor, mass, stv_pos, stv_vel
+	x, _ := strconv.ParseFloat(stv_pos_sl[1], 64)
+	y, _ := strconv.ParseFloat(stv_pos_sl[2], 64)
+	z, _ := strconv.ParseFloat(stv_pos_sl[3], 64)
+	vx, _ := strconv.ParseFloat(stv_vel_sl[1], 64)
+	vy, _ := strconv.ParseFloat(stv_vel_sl[2], 64)
+	vz, _ := strconv.ParseFloat(stv_vel_sl[3], 64)
+
+	body := cmech.Body{x,
+		y,
+		z,
+		vx,
+		vy,
+		vz,
+		mass}
+
+	return body
 }
 
-// main function
-func main() {
-	object := flag.String("object", "", "The name of a celestial object")
-	flag.Parse()
-	mass_factor, mass, stv_pos, stv_vel := getsv(*object)
-	fmt.Printf("Mass (x %s kg) of %s: %s\n", mass_factor, *object, mass)
-	fmt.Printf("Position (km): x: %s y: %s z: %s\n", stv_pos[0], stv_pos[1], stv_pos[2])
-	fmt.Printf("Velocity (km/s): x: %s y: %s z: %s\n", stv_vel[0], stv_vel[1], stv_vel[2])
-}
+
