@@ -5,6 +5,9 @@ import ("github.com/ThomasRooney/gexpect"
 	"time"
 	"strconv"
 	"math"
+	"regexp"
+	"fmt"
+	"os"
 )
 
 // map names to JPL Horizons object ids
@@ -34,8 +37,19 @@ func GetSV(oname string, horizons_time time.Time) cmech.Body {
 		panic(err)
 	}
 
-	id := Name2id[oname]
-
+	// can be either an integer Horizons object number,
+	// of one of the planet name mappings provided
+	numre := regexp.MustCompile(`^\d+$`)
+	id, ok := Name2id[oname]
+	if numre.MatchString(oname) {
+		id = oname
+	} else {
+		if ! ok {
+			fmt.Printf("Error, no mapping for object %s\n", oname)
+			os.Exit(0)
+		}
+	}
+	
 	child.Expect("Horizons>")
 	child.SendLine(id)
 
