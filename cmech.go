@@ -6,14 +6,22 @@ import ("math"
 // celestial body
 // km, sec, kg
 type Body struct {
+	Name string
 	X float64
 	Y float64
 	Z float64
 	Vx float64
 	Vy float64
 	Vz float64
+	T float64 // thrust
+	TVx float64 // thrust direction (unit vector)
+	TVy float64
+	TVz float64
 	Mass float64
 }
+
+// system of Bodys
+type CMSystem []*Body
 
 // gravitational constant
 const G float64 = 6.674e-20 // km**3 / kg-s**2
@@ -66,3 +74,5 @@ func (body *Body) Update(other *Body, timestep float64) {
 	other.Vy = other.Vy + (ayo / timestep)
 	other.Vz = other.Vz + (azo / timestep)
 }
+
+
