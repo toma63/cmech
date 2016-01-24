@@ -29,6 +29,7 @@ var Name2id = map[string]string {
 // convert to units of km, sec, kg
 // takes horizons_time time.Time
 // allowing multiple objects to use the same starting time
+// TODO, pass a slice object names to query using the same connection
 func GetSV(oname string, horizons_time time.Time) cmech.Body {
 
 	// connect to the JPL Horizons telnet interface
@@ -103,15 +104,30 @@ func GetSV(oname string, horizons_time time.Time) cmech.Body {
 	vy, _ := strconv.ParseFloat(stv_vel_sl[2], 64)
 	vz, _ := strconv.ParseFloat(stv_vel_sl[3], 64)
 
-	body := cmech.Body{x,
+	body := cmech.Body{oname,
+		x,
 		y,
 		z,
 		vx,
 		vy,
 		vz,
+		0, // no thrust
+		0,
+		0,
+		0,
 		mass}
 
 	return body
 }
 
 
+// get a system of celestial objects from the JPL Horizons server
+func GetCMSystem(object_names []string, now time.Time) (system cmech.CMSystem) {
+
+	for _, oname := range object_names {
+		body := GetSV(oname, now)
+		system = append(system, &body)
+	}
+
+	return
+}
