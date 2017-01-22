@@ -13,7 +13,7 @@ import ("fmt"
 // main function
 func main() {
 	numre := regexp.MustCompile(`^\d+$`)
-	objects := flag.String("objects", "", "Colon separated list of names of a celestial objects")
+	objects := flag.String("objects", "", "Colon separated list of names of solar system objects")
 	flag.Parse()
 	onames := strings.Split(*objects, ":")
 	now := time.Now()

@@ -74,9 +74,9 @@ func GetSV(oname string, horizons_time time.Time) cmech.Body {
 	child.SendLine("@0") // solar system barycenter
 	child.Expect("[eclip, frame, body ] :")
 	child.SendLine("eclip")
-	child.Expect("Starting CT")
+	child.Expect("Starting TDB")
 	child.SendLine(tnf)
-	child.Expect("Ending   CT")
+	child.Expect("Ending   TDB")
 	child.SendLine(tlf)
 	child.Expect("Output interval [ex: 10m, 1h, 1d, ? ] :")
 	child.SendLine("1d")
@@ -90,10 +90,12 @@ func GetSV(oname string, horizons_time time.Time) cmech.Body {
 	child.SendLine("1") // km/s
 	child.Expect("Spreadsheet CSV format    [ YES, NO ] :")
 	child.SendLine("NO")
-	child.Expect(" Label cartesian output    [ YES, NO ] :")
+	child.Expect("Output delta-T (TDB-UT)   [ YES, NO ] :")
 	child.SendLine("NO")
 	child.Expect("Select output table type  [ 1-6, ?  ] :")
 	child.SendLine("2")
+	child.Expect(" Label cartesian output    [ YES, NO ] :")
+	child.SendLine("NO")
 	stv_pos_sl, _ := child.ExpectRegexFind(`\s+(-?\d\.\d+E[+-]\d+)\s+(-?\d\.\d+E[+-]\d+)\s+(-?\d\.\d+E[+-]\d+)`)
 	stv_vel_sl, _ := child.ExpectRegexFind(`\s+(-?\d\.\d+E[+-]\d+)\s+(-?\d\.\d+E[+-]\d+)\s+(-?\d\.\d+E[+-]\d+)`)
 

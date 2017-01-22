@@ -12,7 +12,7 @@ import ("fmt"
 // main function
 func main() {
 	numre := regexp.MustCompile(`^\d+$`)
-	object := flag.String("object", "", "The name of a celestial object")
+	object := flag.String("object", "", "The name of a solar system object")
 	flag.Parse()
 	now := time.Now()
 	body := getsv.GetSV(*object, now)
